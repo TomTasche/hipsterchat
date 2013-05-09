@@ -3,3 +3,7 @@
 # Package Files #
 *.war
 *.ear
+
+# Local configuration file (sdk path, etc)
+local.properties
+.settings

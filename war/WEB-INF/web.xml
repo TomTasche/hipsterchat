@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+	version="2.5">
+	<servlet>
+		<servlet-name>SubscriptionServlet</servlet-name>
+		<servlet-class>at.tomtasche.indoors.hipsterchat.SubscriptionServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>SubscriptionServlet</servlet-name>
+		<url-pattern>/_ah/xmpp/subscription/subscribed/</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>ChatServlet</servlet-name>
+		<servlet-class>at.tomtasche.indoors.hipsterchat.ChatServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>ChatServlet</servlet-name>
+		<url-pattern>/_ah/xmpp/message/chat/</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>CronServlet</servlet-name>
+		<servlet-class>at.tomtasche.indoors.hipsterchat.CronServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>CronServlet</servlet-name>
+		<url-pattern>/unbusyall</url-pattern>
+	</servlet-mapping>
+</web-app>
