@@ -1,6 +1,7 @@
 package at.tomtasche.indoors.hipsterchat;
 
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.servlet.http.HttpServlet;
@@ -67,6 +68,7 @@ public class ChatServlet extends HttpServlet {
 		} else if (body.startsWith("/list")) {
 			StringBuilder builder = new StringBuilder();
 			builder.append("users in room " + room + ":");
+			builder.append(LINE_SEPARATOR);
 
 			List<User> users = store.getByRoom(room);
 			for (User user : users) {
@@ -74,9 +76,9 @@ public class ChatServlet extends HttpServlet {
 				builder.append(LINE_SEPARATOR);
 			}
 
-			Message reply = new MessageBuilder().withFromJid(toJid)
-					.withBody(body).withRecipientJids(fromJid).build();
-			xmpp.sendMessage(reply);
+			body = builder.toString();
+
+			sendMessage(body, toJid, fromJid);
 
 			return;
 		} else if (body.startsWith("/name")) {
@@ -104,15 +106,16 @@ public class ChatServlet extends HttpServlet {
 
 			body = builder.toString();
 
-			Message reply = new MessageBuilder().withFromJid(toJid)
-					.withBody(body).withRecipientJids(fromJid).build();
-			xmpp.sendMessage(reply);
+			sendMessage(body, toJid, fromJid);
 
 			return;
 		}
 
+		if (fromUser == null)
+			return;
+
 		List<User> users = store.getByRoom(room);
-		JID[] jids = new JID[users.size()];
+		List<JID> jids = new LinkedList<JID>();
 		for (int i = 0; i < users.size(); i++) {
 			User user = users.get(i);
 			if (user.isBusy())
@@ -121,14 +124,20 @@ public class ChatServlet extends HttpServlet {
 			if (user.getJid().equals(fromJidString))
 				continue;
 
-			jids[i] = new JID(user.getJid());
+			jids.add(new JID(user.getJid()));
 		}
 
-		Message reply = new MessageBuilder()
-				.withFromJid(toJid)
-				.withBody(
-						"from " + fromUser.getName() + ": " + LINE_SEPARATOR
-								+ body).withRecipientJids(jids).build();
+		JID[] jidsArray = new JID[jids.size()];
+		jids.toArray(jidsArray);
+
+		sendMessage(
+				"from " + fromUser.getName() + ": " + LINE_SEPARATOR + body,
+				toJid, jidsArray);
+	}
+
+	private void sendMessage(String body, JID from, JID... to) {
+		Message reply = new MessageBuilder().withFromJid(from).withBody(body)
+				.withRecipientJids(to).build();
 		xmpp.sendMessage(reply);
 	}
 }
