@@ -131,7 +131,7 @@ public class ChatServlet extends HttpServlet {
 		jids.toArray(jidsArray);
 
 		sendMessage(
-				"from " + fromUser.getName() + ": " + LINE_SEPARATOR + body,
+				"-- " + fromUser.getName() + ": " + LINE_SEPARATOR + body,
 				toJid, jidsArray);
 	}
 
