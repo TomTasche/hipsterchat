@@ -18,7 +18,7 @@ public class CronServlet extends HttpServlet {
 	}
 
 	@Override
-	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 		List<User> users = store.getAll();
 		for (User user : users) {

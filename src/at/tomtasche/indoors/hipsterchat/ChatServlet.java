@@ -19,6 +19,7 @@ public class ChatServlet extends HttpServlet {
 
 	private static final String LINE_SEPARATOR = System
 			.getProperty("line.separator");
+	private static final String[] COMMAND_PREFIXES = { "/", "--" };
 
 	private XMPPService xmpp;
 	private UserStore store;
@@ -47,25 +48,25 @@ public class ChatServlet extends HttpServlet {
 		} catch (IllegalArgumentException e) {
 		}
 
-		if (body.startsWith("/busy")) {
+		if (containsCommand(body, "busy")) {
 			fromUser.setBusy(true);
 			store.update(fromUser);
 
 			return;
-		} else if (body.startsWith("/unbusy")) {
+		} else if (containsCommand(body, "unbusy")) {
 			fromUser.setBusy(false);
 			store.update(fromUser);
 
 			return;
-		} else if (body.startsWith("/unsubscribe")) {
+		} else if (containsCommand(body, "unsubscribe")) {
 			store.delete(fromUser);
 
 			return;
-		} else if (body.startsWith("/subscribe")) {
+		} else if (containsCommand(body, "subscribe")) {
 			store.add(fromJidString, fromJidString.split("@")[0], false, room);
 
 			return;
-		} else if (body.startsWith("/list")) {
+		} else if (containsCommand(body, "list")) {
 			StringBuilder builder = new StringBuilder();
 			builder.append("users in room " + room + ":");
 			builder.append(LINE_SEPARATOR);
@@ -73,6 +74,9 @@ public class ChatServlet extends HttpServlet {
 			List<User> users = store.getByRoom(room);
 			for (User user : users) {
 				builder.append(user.getName());
+				if (user.isBusy())
+					builder.append(" (he's a busy boy at the moment)");
+
 				builder.append(LINE_SEPARATOR);
 			}
 
@@ -81,14 +85,14 @@ public class ChatServlet extends HttpServlet {
 			sendMessage(body, toJid, fromJid);
 
 			return;
-		} else if (body.startsWith("/name")) {
+		} else if (containsCommand(body, "name")) {
 			String name = body.split(" ")[1];
 
 			fromUser.setName(name);
 			store.update(fromUser);
 
 			return;
-		} else if (body.startsWith("/help")) {
+		} else if (containsCommand(body, "help")) {
 			StringBuilder builder = new StringBuilder();
 			builder.append("'/busy': set your user busy. you will no longer receive any messages until you '/unbusy' or until all users are reset (every day at midnight)");
 			builder.append(LINE_SEPARATOR);
@@ -114,6 +118,9 @@ public class ChatServlet extends HttpServlet {
 		if (fromUser == null)
 			return;
 
+		if (body.contains("OTR"))
+			return;
+
 		List<User> users = store.getByRoom(room);
 		List<JID> jids = new LinkedList<JID>();
 		for (int i = 0; i < users.size(); i++) {
@@ -130,9 +137,17 @@ public class ChatServlet extends HttpServlet {
 		JID[] jidsArray = new JID[jids.size()];
 		jids.toArray(jidsArray);
 
-		sendMessage(
-				"-- " + fromUser.getName() + ": " + LINE_SEPARATOR + body,
+		sendMessage("-- " + fromUser.getName() + ": " + LINE_SEPARATOR + body,
 				toJid, jidsArray);
+	}
+
+	private boolean containsCommand(String body, String command) {
+		for (String prefix : COMMAND_PREFIXES) {
+			if (body.startsWith(prefix + command))
+				return true;
+		}
+
+		return false;
 	}
 
 	private void sendMessage(String body, JID from, JID... to) {
