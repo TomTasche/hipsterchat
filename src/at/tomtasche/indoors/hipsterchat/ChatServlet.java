@@ -74,6 +74,8 @@ public class ChatServlet extends HttpServlet {
 			List<User> users = store.getByRoom(room);
 			for (User user : users) {
 				builder.append(user.getName());
+				builder.append(" - ");
+				builder.append(user.getJid());
 				if (user.isBusy())
 					builder.append(" (he's a busy boy at the moment)");
 
